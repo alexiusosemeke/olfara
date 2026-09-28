@@ -1,4 +1,8 @@
-# React + Vite
+# OLFARA PROJECT
+
+A fragrance discovery marketplace aiming to bridge a gap between vendors and customers
+
+## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
