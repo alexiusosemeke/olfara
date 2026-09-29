@@ -1,6 +1,1 @@
-from django.urls import path, include
-
-
-url_patterns = [
-    # path("/", view=)
-]
+from django.urls import path

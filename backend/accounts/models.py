@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class User(AbstractUser):
@@ -8,7 +9,7 @@ class User(AbstractUser):
         CUSTOMER = "customer", "Customer"
         VENDOR = "vendor", "Vendor"
 
-    phone = models.CharField(max_length=50, null=True, blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
 
     def __str__(self) -> str:
