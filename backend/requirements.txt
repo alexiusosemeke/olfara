@@ -1,4 +1,11 @@
 asgiref==3.12.1
 Django==6.1.1
+django-environ==0.14.0
+django-filter==26.1
+django-phonenumber-field==8.5.0
 djangorestframework==3.18.1
+djangorestframework_simplejwt==5.5.1
+phonenumbers==9.0.40
+psycopg2-binary==2.9.13
+PyJWT==2.15.1
 sqlparse==0.6.0

@@ -27,3 +27,4 @@ dist-ssr
 backend/venv/
 __pycache__/
 *.pyc
+.env
