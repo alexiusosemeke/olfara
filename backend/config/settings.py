@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     # Applications
     "api",
     "accounts",
+    "brands",
 ]
 
 MIDDLEWARE = [
