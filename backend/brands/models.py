@@ -107,7 +107,7 @@ class PerfumeNote(models.Model):
     class Meta:
         # unique_together = ("perfume", "note", "note_type")
         models.UniqueConstraint(
-            fields=["perfume", "note", "note_type"],
+            fields=["perfume", "note", "note_type"], name="unique_perfume_note"
         )
 
     def __str__(self):
