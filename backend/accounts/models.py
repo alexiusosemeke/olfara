@@ -34,9 +34,10 @@ class User(AbstractUser):
     email = models.CharField(unique=True)
     phone_number = PhoneNumberField(null=True, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
+    is_email_verified = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = []  # noqa: RUF012
     objects = CustomUserManager()
 
     def __str__(self) -> str:

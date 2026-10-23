@@ -204,3 +204,7 @@ CLOUDINARY_STORAGE = {
     "API_KEY": env("CLOUDINARY_API_KEY"),
     "API_SECRET": env("CLOUDINARY_API_SECRET"),
 }
+
+
+FRONTEND_URL = env("FRONTEND_URL")
+DEFAULT_FROM_EMAIL = "<Olfara noreply@olfara.com>"
