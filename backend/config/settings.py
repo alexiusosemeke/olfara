@@ -208,3 +208,4 @@ CLOUDINARY_STORAGE = {
 
 FRONTEND_URL = env("FRONTEND_URL")
 DEFAULT_FROM_EMAIL = "<Olfara noreply@olfara.com>"
+PROJECT_NAME = "Olfara"
