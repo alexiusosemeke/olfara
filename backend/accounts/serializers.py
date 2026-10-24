@@ -9,7 +9,8 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "id",
-            "name",
+            "first_name",
+            "last_name",
             "username",
             "email",
             "role",
@@ -23,7 +24,10 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 
-class RegisterUserSerializer(serializers.ModelSerializer):
+class CreateUserSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=50)
+    last_name = serializers.CharField(max_length=50)
+    email = serializers.EmailField()
     phone_number = PhoneNumberField(
         region="NG",
         required=True,
@@ -32,51 +36,36 @@ class RegisterUserSerializer(serializers.ModelSerializer):
             "required": "Phone number is required",
         },
     )
+    password = serializers.CharField(write_only=True, style={"input_type": "password"})
+    confirm_password = serializers.CharField(
+        write_only=True, style={"input_type": "password"}
+    )
 
-    class Meta:
-        model = User
-        fields = [
-            "id",
-            "first_name",
-            "last_name",
-            "username",
-            "email",
-            "password",
-            "role",
-            "phone_number",
-            "is_active",
-            "is_email_verified",
-            "date_joined",
-        ]
-        read_only_fields = ["id", "is_active", "role", "date_joined"]
-        extra_kwargs = {
-            "password": {"write_only": True},
-        }
+    def validate(self, attrs):
+        first_name = attrs.get("first_name").strip()
+        last_name = attrs.get("last_name").strip()
 
-        def validate(self, attrs):
+        password = attrs.get("password")
+        confirm_password = attrs.get("confirm_password")
 
-            validate_password(attrs["password"])
-            email = attrs["email"]
-            username = attrs["username"]
+        if first_name is None:
+            raise serializers.ValidationError({"first_name": "First name is required"})
 
-            if not username.strip():
-                raise serializers.ValidationError(
-                    {"username": "Username cannot be empty"}
-                )
+        if last_name is None:
+            raise serializers.ValidationError({"last_name": "Last name is required."})
 
-            if User.objects.filter(email=email).exists():
-                raise serializers.ValidationError(
-                    {"email": "A user with this email already exists"}
-                )
+        if password != confirm_password:
+            raise serializers.ValidationError({"password": "Passwords do not match"})
+        return attrs
 
-            return attrs
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                {"email": "A user with this email already exists"}
+            )
+        return value
 
-        def create(self, validated_data):
-
-            password = validated_data.pop("password")
-
-            user = User.objects.create(**validated_data)
-            user.set_password(password)
-            user.save()
-
-            return user
+    def create(self, validated_data):
+        confirm_password = validated_data.pop("confirm_password")
+        user = User.objects.create_user(**validated_data)
+        return user

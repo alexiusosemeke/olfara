@@ -6,7 +6,7 @@ from rest_framework.response import Response
 # from rest_framework.response import Response
 from accounts.models import User
 
-from .serializers import RegisterUserSerializer, UserSerializer
+from .serializers import CreateUserSerializer, UserSerializer
 from .utils import sendRegistrationMessage
 
 # Create your views here.
@@ -19,7 +19,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class RegisterUserView(generics.CreateAPIView):
-    serializer_class = RegisterUserSerializer
+    serializer_class = CreateUserSerializer
     queryset = User.objects.all()
     permission_classes = [AllowAny]
 
