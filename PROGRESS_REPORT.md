@@ -10,5 +10,10 @@
 5. Created the Brand Model.
    - I'm yet to make migrations and migrate to my database
 6. Created the Vendor Application and Vendor Profile Model.
+7. Created the AccountVerificationToken Model and added the necessary fields
 
 ## Frontend
+
+## TODO
+
+Complete the Account Verification process
