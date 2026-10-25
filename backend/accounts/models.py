@@ -1,5 +1,9 @@
+from datetime import timedelta
+
+from core.tokens import generate_token
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -41,5 +45,22 @@ class User(AbstractUser):
     def __str__(self) -> str:
         return f"{self.username}'s account."
 
+    @property
+    def getUserName(self):
+        return f"{self.first_name} {self.last_name}"
 
-# Create your models here.
+
+class AccountVerificationToken(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="verification_token"
+    )
+    token = models.CharField(max_length=64, default=generate_token, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        expiration_time = self.created_at + timedelta(hours=2)
+        return not self.is_used and timezone.now() < expiration_time
+
+    def __str__(self) -> str:
+        return f"{self.user.first_name}'s token"
