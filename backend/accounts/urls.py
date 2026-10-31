@@ -14,4 +14,5 @@ urlpatterns = [
     path("auth/login/", view=TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/refresh/", view=TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/register/", view=RegisterUserView.as_view(), name="register"),
+    # path("auth/verify-email/", view=VerifyEmailView.as_view(), name="verify_email"),
 ]

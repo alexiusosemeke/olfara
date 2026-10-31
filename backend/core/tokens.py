@@ -1,12 +1,10 @@
-import secrets
-import string
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 
-def generate_token(length=32) -> str:
-    characters = string.ascii_letters + string.digits
+class AccountVerificationTokenGenerator(PasswordResetTokenGenerator):
 
-    return "".join(secrets.choice(characters) for _ in range(length))
+    def _make_hash_value(self, user, timestamp):
+        return f"{user.pk}{timestamp}{user.is_active}"
 
 
-def generate_tokens(length=32):
-    return secrets.token_urlsafe(length)
+account_verification_token = AccountVerificationTokenGenerator()

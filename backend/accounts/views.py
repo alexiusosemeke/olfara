@@ -1,13 +1,16 @@
 from django.conf import settings
+from django.db import transaction
 from rest_framework import generics, status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 
 # from rest_framework.response import Response
 from accounts.models import User
 
-from .serializers import CreateUserSerializer, UserSerializer
-from .utils import sendRegistrationMessage
+from .emails import sendRegistrationMessage
+from .serializers import CreateUserSerializer, UserSerializer, VerifyEmailSerializer
 
 # Create your views here.
 
@@ -39,3 +42,5 @@ class RegisterUserView(generics.CreateAPIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+

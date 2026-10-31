@@ -1,7 +1,12 @@
-from rest_framework import serializers
-from accounts.models import User
-from phonenumber_field.serializerfields import PhoneNumberField
 from django.contrib.auth.password_validation import validate_password
+from django.db import transaction
+from phonenumber_field.serializerfields import PhoneNumberField
+from rest_framework import serializers
+
+from accounts.models import User
+
+from .emails import sendRegistrationMessage
+from core.tokens import account_verification_token
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -64,6 +69,19 @@ class CreateUserSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        confirm_password = validated_data.pop("confirm_password")
-        user = User.objects.create_user(**validated_data)
+        validated_data.pop("confirm_password")
+
+        with transaction.atomic():
+            user = User.objects.create_user(**validated_data, is_active=False)
+            verification_token = account_verification_token.make_token(user=user)
+
+            transaction.on_commit(
+                lambda: sendRegistrationMessage(
+                    user=user, token=verification_token
+                )
+            )
         return user
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.CharField(max_length=64)
