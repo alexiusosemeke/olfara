@@ -7,6 +7,7 @@ from accounts.models import User
 
 from .emails import sendRegistrationMessage
 from core.tokens import account_verification_token
+from django.contrib.auth.password_validation import validate_password
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -30,8 +31,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CreateUserSerializer(serializers.Serializer):
-    first_name = serializers.CharField(max_length=50)
-    last_name = serializers.CharField(max_length=50)
+    first_name = serializers.CharField(max_length=50, trim_whitespace=True)
+    last_name = serializers.CharField(max_length=50, trim_whitespace=True)
     email = serializers.EmailField()
     phone_number = PhoneNumberField(
         region="NG",
@@ -46,27 +47,19 @@ class CreateUserSerializer(serializers.Serializer):
         write_only=True, style={"input_type": "password"}
     )
 
-    def validate(self, attrs):
-        first_name = attrs.get("first_name").strip()
-        last_name = attrs.get("last_name").strip()
-
-        password = attrs.get("password")
-        confirm_password = attrs.get("confirm_password")
-
-        if first_name is None:
-            raise serializers.ValidationError({"first_name": "First name is required"})
-
-        if last_name is None:
-            raise serializers.ValidationError({"last_name": "Last name is required."})
-
-        if password != confirm_password:
-            raise serializers.ValidationError({"password": "Passwords do not match"})
-        return attrs
-
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError({"A user with this email already exists"})
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value.lower()
+
+    def validate_password(self, value):
+        validate_password(value)
         return value
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({"confirm_password": "Passwords do not match"})
+        return attrs
 
     def create(self, validated_data):
         validated_data.pop("confirm_password")
@@ -85,3 +78,57 @@ class CreateUserSerializer(serializers.Serializer):
 
 class VerifyEmailSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=64)
+    email = serializers.EmailField()
+
+    def validate(self, attrs):
+        email = attrs['email']
+        token = attrs['token']
+
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({'email': 'Invalid verification credentials.'})
+
+        if user.is_active:
+            raise serializers.ValidationError({'email': 'Email is already verified.'})
+
+        if not account_verification_token.check_token(user=user, token=token):
+            raise serializers.ValidationError({"token": "Invalid or expired verification token"})
+
+        attrs['user'] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.validated_data['user']
+        user.is_active = True
+        user.save(update_fields=['is_active'])
+        return user
+
+class ResendVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("A user with this email does not exist.")
+        return value
+
+    def validate(self, attrs):
+        email = attrs['email']
+
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({'email': 'Invalid verification credentials.'})
+
+        if user.is_active:
+            raise serializers.ValidationError({'email': 'Email is already verified.'})
+
+        attrs['user'] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.validated_data['user']
+        verification_token = account_verification_token.make_token(user=user)
+
+        sendRegistrationMessage(user=user, token=verification_token)
+        return user

@@ -33,7 +33,7 @@ class User(AbstractUser):
 
     username = None  # removes the username field entirely
     email = models.EmailField(unique=True)
-    phone_number = PhoneNumberField(null=True, blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True, region="NG", unique=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
     is_active = models.BooleanField(default=False)
 
