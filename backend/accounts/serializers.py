@@ -137,3 +137,19 @@ class ResendVerificationSerializer(serializers.Serializer):
 
         sendRegistrationMessage(user=user, token=verification_token)
         return user
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("A user with this email does not exist.")
+        return value
+
+    def save(self, **kwargs):
+        email = self.validated_data['email']
+        user = User.objects.get(email__iexact=email)
+        # Generate and send password reset token
+        return user
+

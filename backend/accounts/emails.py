@@ -31,3 +31,30 @@ The {settings.PROJECT_NAME} Team
         recipient_list=[user.email],
         fail_silently=False,
     )
+
+def sendPasswordResetMail(user, token):
+    subject = "Reset your password"
+
+    reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+
+    message = f"""
+Hello {user.last_name or user.email},
+
+You have requested to reset your password. Please click the link below to proceed:
+
+{reset_url}
+
+This link expires in two hours.
+
+If you did not request this, please ignore this email.
+
+Best regards,
+The {settings.PROJECT_NAME} Team
+"""
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )

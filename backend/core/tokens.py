@@ -8,3 +8,10 @@ class AccountVerificationTokenGenerator(PasswordResetTokenGenerator):
 
 
 account_verification_token = AccountVerificationTokenGenerator()
+
+class PasswordResetToken(PasswordResetTokenGenerator):
+
+    def _make_hash_value(self, user, timestamp):
+        return f"{user.pk}{timestamp}{user.is_active}"
+
+password_reset_token = PasswordResetToken()
