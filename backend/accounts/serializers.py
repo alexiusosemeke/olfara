@@ -52,6 +52,11 @@ class CreateUserSerializer(serializers.Serializer):
             raise serializers.ValidationError("A user with this email already exists.")
         return value.lower()
 
+    def validate_phone_number(self, value):
+        if User.objects.filter(phone_number=value).exists():
+            raise serializers.ValidationError("A user with this phone number already exists.")
+        return value
+
     def validate_password(self, value):
         validate_password(value)
         return value

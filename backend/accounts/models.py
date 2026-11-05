@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -36,6 +37,11 @@ class User(AbstractUser):
     phone_number = PhoneNumberField(null=True, blank=True, region="NG", unique=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
     is_active = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(Lower('email'), name='unique_user_email_ci'),
+        ]
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['first_name', 'last_name']  # noqa: RUF012

@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from rest_framework import generics, status, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -30,9 +31,24 @@ class RegisterUserView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.save()
+        email = serializer.validated_data['email']
+        phone_number = serializer.validated_data['phone_number']
 
-        sendRegistrationMessage(user=user)
+        try:
+            user = serializer.save()
+        except IntegrityError:
+            if User.objects.filter(email__iexact=email).exists():
+                return Response(
+                    {"message": "A user with this email already exists."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+
+            if User.objects.filter(phone_number=phone_number).exists():
+                return Response({
+                    "message": "A user with this phone number already exists."
+                }, status=status.HTTP_409_CONFLICT)
+
+            raise
 
         return Response(
             {
